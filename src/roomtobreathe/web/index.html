@@ -193,8 +193,8 @@
       <section class="card step buybox-card">
         <h2 class="step-h"><span class="num">2</span> How many people?</h2>
         <form id="as-form" class="people-row">
-          <input name="attendance" type="number" min="1" inputmode="numeric" placeholder="e.g. 5000" class="big-input"
-            required aria-label="People expected">
+          <input name="attendance" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 5000 or 1 lakh" class="big-input"
+            required aria-label="People expected" aria-describedby="as-read">
           <label class="arrive">arriving over
             <select name="arrival_minutes" aria-label="Arriving over">
               <option value="30">30 minutes</option><option value="60" selected>1 hour</option>
@@ -202,6 +202,7 @@
             </select></label>
           <button class="primary big" id="as-run">Check my event</button>
         </form>
+        <div id="as-read" class="small muted as-read" aria-live="polite"></div>
         <div id="as-status" class="small muted" role="status"></div>
       </section>
 

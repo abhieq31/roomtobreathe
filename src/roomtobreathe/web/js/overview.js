@@ -1,6 +1,7 @@
 // "The area around the venue": crowd routes, traffic, emergency access and where to place every team.
 // The computation is the Python engine (roomtobreathe.surroundings), on the control-room server or in this
 // browser (Pyodide). Map data comes from OpenStreetMap's free Overpass servers and is cached in the browser.
+import { parsePeople } from "./numbers.js";
 import { fetchTiles } from "./tiles.js";
 import { loadLibs } from "./venuemap.js";
 import { inBrowserEngine, usingServer, venueForChecks } from "./whatif.js";
@@ -178,7 +179,7 @@ function readParams() {
   }
   const arrival = Number(a.get("arrival_minutes")) || null;
   return {
-    attendance: Number(a.get("attendance")), modes, arrival_minutes: arrival,
+    attendance: parsePeople(a.get("attendance")), modes, arrival_minutes: arrival,
     event_end_min: (arrival || 60) + Number(f.get("duration") || 120),
     public_level: Number(f.get("public_level") || 1), radius_m: RADIUS_M,
   };

@@ -1,5 +1,6 @@
 import { round2, toLocal } from "./geo.js";
 import { polygonArea } from "./geometry.js";
+import { parsePeople } from "./numbers.js";
 import { openMap, refreshMap, searchPlace } from "./venuemap.js";
 
 // What-if studies in the browser. The computation is the Python engine itself (roomtobreathe.whatif):
@@ -295,7 +296,7 @@ function updateGuide() {
   const custom = $("#wi-src").value === "custom";
   const done = {
     venue: Boolean(venue) && !problems.length && (!custom || draft.zones.length > 0),
-    people: Number($('#as-form [name="attendance"]')?.value) > 0,
+    people: parsePeople($('#as-form [name="attendance"]')?.value) > 0,
     verdict: !$("#as-result").hidden,
     teams: !$("#ov-out").hidden,
   };
@@ -327,6 +328,20 @@ function initGuide() {
 
 // ------------------------------------------------------------------ the verdict
 const ICON = { pass: "✓", warn: "!", fail: "✕" };
+async function shareVerdict(r, btn) {
+  const text = `${r.headline}. ${r.venue}: safe capacity ${r.safe_capacity.toLocaleString()}, ` +
+    `${r.attendance.toLocaleString()} people expected. Checked with Room to Breathe, free crowd-safety planning:`;
+  const url = location.origin + location.pathname;
+  const said = (t) => { const was = btn.textContent; btn.textContent = t; setTimeout(() => { btn.textContent = was; }, 2000); };
+  try {
+    if (navigator.share) { await navigator.share({ title: "Room to Breathe", text, url }); return; }
+    await navigator.clipboard.writeText(`${text} ${url}`);
+    said("Copied ✓");
+  } catch (err) {
+    if (err?.name !== "AbortError") said("Could not share");
+  }
+}
+
 function renderVerdict(r, venue) {
   const box = $("#as-result");
   const n = r.numbers || {};
@@ -376,12 +391,19 @@ function renderVerdict(r, venue) {
     </details>
     <div class="btns">
       <button type="button" id="as-save">Save this venue</button>
-      <button type="button" class="link" data-goto="count">On the day: count people at the gates →</button>
+      <button type="button" id="as-share">Share this check</button>
+      <button type="button" class="link" id="as-count" data-goto="count">On the day: count people at the gates →</button>
     </div>
     <p class="small muted">Decision support, not a guarantee: a model of people per area and flow through the ways in and out.
       Walk the site, rehearse your response, and recheck if anything changes.</p>`;
   box.hidden = false;
   $("#as-save").addEventListener("click", () => $("#wi-download").click());
+  $("#as-share").addEventListener("click", () => shareVerdict(r, $("#as-share")));
+  // On the day, the gate counter warns against the capacity this check found.
+  $("#as-count").addEventListener("click", () => {
+    const permit = $("#cnt-permit");
+    if (permit) { permit.value = r.safe_capacity; permit.dispatchEvent(new Event("input")); }
+  });
   $("#as-next").addEventListener("click", () => {
     if (!located) { document.querySelector('.choice-btn[data-src="map"]')?.click(); $("#wi-map-q")?.focus(); return; }
     $("#ov-card").scrollIntoView({ block: "start", behavior: "smooth" });
@@ -404,8 +426,8 @@ async function check(e) {
   const status = $("#as-status");
   if (problems.length || !venue) { status.textContent = problems[0] || "First tell us where the event is (step 1)."; return; }
   const f = new FormData($("#as-form"));
-  const attendance = Number(f.get("attendance")), arrival_minutes = Number(f.get("arrival_minutes"));
-  if (!(attendance > 0)) { status.textContent = "Type how many people you expect."; return; }
+  const attendance = parsePeople(f.get("attendance")), arrival_minutes = Number(f.get("arrival_minutes"));
+  if (!(attendance > 0)) { status.textContent = "Type how many people you expect, like 5000, 60,000 or 1 lakh."; return; }
   store.set("as-people", attendance);
   // the expert form starts from the same numbers
   $('#wi-form [name="attendance"]').value = attendance;
@@ -527,7 +549,15 @@ export async function initWhatIf({ online }) {
   });
   $("#as-form").addEventListener("submit", check);
   const saved = store.get("as-people", null);
-  if (saved) $('#as-form [name="attendance"]').value = saved;
+  const people = $('#as-form [name="attendance"]');
+  if (saved) people.value = saved;
+  // Say back how the number was read ("1.5 lakh" = 150,000 people), so a typo never goes unnoticed.
+  const readBack = () => {
+    const v = parsePeople(people.value), raw = people.value.trim();
+    $("#as-read").textContent = !raw || String(v) === raw.replace(/[,\s]/g, "") ? "" : v ? `= ${v.toLocaleString()} people` : "Type a number, like 5000 or 1 lakh";
+  };
+  people.addEventListener("input", readBack);
+  readBack();
   renderBuilder();
   showSrc();
 }
