@@ -334,7 +334,7 @@ async function drawMap(r) {
   map = L.map("ov-map", { scrollWheelZoom: false }); // the page scrolls; click the map to zoom with the wheel
   map.on("click", () => map.scrollWheelZoom.enable());
   map.on("mouseout", () => map.scrollWheelZoom.disable());
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap contributors" }).addTo(map);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, className: "street-tiles", attribution: "© OpenStreetMap contributors" }).addTo(map);
   groups = {};
   const group = (k) => (groups[k] ??= L.layerGroup().addTo(map));
   for (const f of r.geojson.features) {

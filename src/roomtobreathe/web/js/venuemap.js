@@ -338,7 +338,7 @@ export async function openMap(state, changed) {
   map.on("mouseout", () => map.scrollWheelZoom.disable());
   if (!draft.origin && !draft.zones.length) idle(true);
   const streets = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19, attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' });
+    maxZoom: 19, className: "street-tiles", attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' });
   const satellite = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
     maxZoom: 19, attribution: "Imagery © Esri, Maxar, Earthstar Geographics" });
   satellite.addTo(map);

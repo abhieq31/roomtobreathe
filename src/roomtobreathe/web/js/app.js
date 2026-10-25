@@ -10,6 +10,32 @@ const store = {
   set(k, v) { try { localStorage.setItem("rtb:" + k, JSON.stringify(v)); } catch { /* private mode */ } },
 };
 
+// ---------------------------------------------------------------- theme
+// One button: light or dark. Picking the same as the device setting goes back to following the device.
+const darkQuery = matchMedia("(prefers-color-scheme: dark)");
+const SUN = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>';
+const MOON = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z" fill="currentColor"/></svg>';
+const themeNow = () => document.documentElement.dataset.theme || (darkQuery.matches ? "dark" : "light");
+function showTheme() {
+  const dark = themeNow() === "dark", btn = $("#theme-btn");
+  btn.innerHTML = dark ? SUN : MOON;
+  btn.setAttribute("aria-label", dark ? "Switch to light theme" : "Switch to dark theme");
+  btn.title = btn.getAttribute("aria-label");
+  // the phone's status bar matches the page (--bg); read from the tokens, not mid-fade from the page
+  for (const m of document.querySelectorAll('meta[name="theme-color"]')) m.content = dark ? "#0d1514" : "#f5f7f5";
+}
+$("#theme-btn").addEventListener("click", () => {
+  const next = themeNow() === "dark" ? "light" : "dark";
+  const root = document.documentElement;
+  root.classList.add("theming"); // a soft cross-fade, only while switching
+  if (next === (darkQuery.matches ? "dark" : "light")) { delete root.dataset.theme; store.set("theme", null); }
+  else { root.dataset.theme = next; store.set("theme", next); }
+  showTheme();
+  setTimeout(() => root.classList.remove("theming"), 350);
+});
+darkQuery.addEventListener("change", showTheme);
+showTheme();
+
 // ---------------------------------------------------------------- tabs
 for (const b of document.querySelectorAll(".tabs button")) {
   b.addEventListener("click", () => showTab(b.dataset.tab));
