@@ -20,7 +20,10 @@ function showTab(name) {
   store.set("tab", name);
 }
 const firstVisit = store.get("tab", null) === null;
-showTab(store.get("tab", "live"));
+const isStatic = Boolean(document.querySelector('meta[name="rtb-static"]'));
+// The public web app has no live tab: open straight on planning so the page never flashes the wrong tab.
+showTab(isStatic && store.get("tab", "live") === "live" ? "whatif" : store.get("tab", "live"));
+if (isStatic) document.querySelector('.tabs [data-tab="live"]').hidden = true;
 document.addEventListener("click", (e) => {
   const a = e.target.closest("[data-goto]");
   if (a) { e.preventDefault(); showTab(a.dataset.goto); }
@@ -77,6 +80,9 @@ const post = (path, body) => api(path, { method: "POST", body: JSON.stringify(bo
 
 async function boot() {
   try {
+    // A static copy (the public web app) has no control-room server: do not ask for one, so the
+    // browser shows no failed requests. The build marks such copies (scripts/build_site.py).
+    if (isStatic) throw new Error("static site");
     venue = await api("/api/venue");
     online = true;
   } catch {

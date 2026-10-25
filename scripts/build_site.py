@@ -35,6 +35,10 @@ def main(argv=None) -> int:
         shutil.rmtree(out)
     shutil.copytree(ROOT / "src" / "roomtobreathe" / "web", out)
     (out / ".nojekyll").write_text("")  # serve files as they are
+    # Mark this copy as static, so the app does not look for a control-room server that cannot exist here.
+    index = out / "index.html"
+    marker = '<meta charset="utf-8">\n  <meta name="rtb-static" content="1">'
+    index.write_text(index.read_text(encoding="utf-8").replace('<meta charset="utf-8">', marker, 1), encoding="utf-8")
     (out / "data").mkdir()
     shutil.copy(ROOT / "src" / "roomtobreathe" / "data" / "venues" / "pandal.json", out / "data" / "pandal.json")
 
