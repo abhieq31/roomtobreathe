@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#171b21" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f5f7f5" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0d1514" media="(prefers-color-scheme: dark)">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -16,6 +16,8 @@
   <meta property="og:url" content="https://abhipatelz.github.io/roomtobreathe/">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="styles.css">
+  <!-- the chosen theme is applied before the first paint, so the page never flashes the other one -->
+  <script>try { var t = JSON.parse(localStorage.getItem("rtb:theme")); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}</script>
 </head>
 <body>
   <header class="topbar">
@@ -24,9 +26,10 @@
       <label class="nav-scope" for="nav-q">Where is your event?</label>
       <svg class="nav-ico" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
       <input id="nav-q" type="search" enterkeyhint="search" autocomplete="off"
-        placeholder="Where is your event? A ground, stadium, temple or park">
+        placeholder="Search a ground or stadium">
       <button class="nav-go">Find</button>
     </form>
+    <button type="button" class="theme-btn" id="theme-btn" aria-label="Switch to dark theme" title="Switch theme"></button>
     <button class="who" id="who" title="Operator name and access code">Sign in</button>
     <div class="conn" id="conn" title="Server connection">offline</div>
   </header>
